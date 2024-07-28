@@ -5,7 +5,7 @@ import webbrowser
 import cloudconvert
 
 # Set your CloudConvert API key here
-api_key = 'your_api_key_here'
+api_key = ''
 
 def download_auction_list(auction_id):
     url = f"https://techliquidators.ca/query2Excel.cfm?i={auction_id}"
@@ -110,6 +110,9 @@ def process_auction_list(auction_id):
         # Convert item_counts to a list of tuples and sort by quantity in descending order
         sorted_items = sorted(item_counts.items(), key=lambda x: x[1], reverse=True)
 
+        # Calculate the total quantity of all items
+        total_quantity = sum(item_counts.values())
+
         # Generate HTML content
         html_content = """
         <!DOCTYPE html>
@@ -136,10 +139,10 @@ def process_auction_list(auction_id):
             <h1>Items List</h1>
             <table>
                 <tr>
-                    <th>Title</th>
-                    <th>MFG Name</th>
-                    <th>Quantity</th>
+                    <th>Manufacturer</th>
+                    <th>Item</th>
                     <th>Image</th>
+                    <th>Quantity</th>
                 </tr>
         """
 
@@ -150,15 +153,19 @@ def process_auction_list(auction_id):
             image_url = f"https://multimedia.bbycastatic.ca/multimedia/products/500x500/{sku_str[:3]}/{sku_str[:5]}/{sku_str}.jpg"
             html_content += f"""
                 <tr>
-                    <td>{title}</td>
                     <td>{mfg_name}</td>
+                    <td>{title}</td>
+                    <td><a href="{link}" target="_blank"><img src="{image_url}" alt="Image for {title}" width="100"></a></td>
                     <td>{qty}</td>
-                    <td><a href="{link}"><img src="{image_url}" alt="Image for {title}" width="100"></a></td>
                 </tr>
             """
 
-        # Close the HTML tags
-        html_content += """
+        # Append the total quantity to the HTML content
+        html_content += f"""
+                <tr>
+                    <td colspan="3"><strong>Total Quantity</strong></td>
+                    <td><strong>{total_quantity}</strong></td>
+                </tr>
             </table>
         </body>
         </html>
@@ -166,7 +173,7 @@ def process_auction_list(auction_id):
 
         # Save the HTML content to a file
         directory = f"{auction_id}"
-        output_file = os.path.join(directory, f'{auction_id}_items_list.html')
+        output_file = os.path.join(directory, f'{auction_id}.html')
         with open(output_file, 'w') as file:
             file.write(html_content)
 
